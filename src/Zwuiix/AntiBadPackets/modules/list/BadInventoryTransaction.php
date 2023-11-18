@@ -25,10 +25,6 @@ class BadInventoryTransaction extends Module
     {
         if ($packet instanceof InventoryTransactionPacket) {
             foreach ($packet->trData->getActions() as $action) {
-                if ($action->sourceType === NetworkInventoryAction::SOURCE_CREATIVE && !$networkSession->getPlayer()->isCreative()) {
-                    $this->flag();
-                }
-
                 foreach ([$action->oldItem, $action->newItem] as $item) {
                     $item = TypeConverter::getInstance()->netItemStackToCore($item->getItemStack());
                     if (count($item->getEnchantments()) >= 100 || count($item->getCanDestroy()) >= 100 || count($item->getCanPlaceOn()) >= 100) {

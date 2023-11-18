@@ -23,10 +23,10 @@ class BadCraftingEvent extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if ($packet instanceof CraftingEventPacket) {
-            if(($input = count($packet->input)) >= 50) {
+            if(count($packet->input) >= 50) {
                 $this->flag();
             }
-            if(($output = count($packet->output)) >= 50) {
+            if(count($packet->output) >= 50) {
                 $this->flag();
             }
 
