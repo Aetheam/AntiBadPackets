@@ -5,6 +5,7 @@ namespace Zwuiix\AntiBadPackets\modules\list;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\ServerboundPacket;
+use pocketmine\player\Player;
 use Zwuiix\AntiBadPackets\modules\Module;
 
 class BadPlayerAuthInput extends Module
@@ -23,17 +24,23 @@ class BadPlayerAuthInput extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if($packet instanceof PlayerAuthInputPacket) {
-            if(!isset($this->ticks[$networkSession->getDisplayName()])) {
-                $this->ticks[$networkSession->getDisplayName()] = $packet->getTick();
+            $player = $networkSession->getPlayer();
+            if(!$player instanceof Player) {
+                return;
             }
 
-            $this->ticks[$networkSession->getDisplayName()]++;
-            if($packet->getTick() !== $this->ticks[$networkSession->getDisplayName()]) {
-                $diff = abs($packet->getTick() - $this->ticks[$networkSession->getDisplayName()]);
-                if($networkSession->getPlayer()->isAlive() && $networkSession->getPlayer()->getHealth() > 1 && $diff >= 2) {
-                    $this->flag();
-                }else $this->ticks[$networkSession->getDisplayName()] = $packet->getTick();
+            if(!isset($this->ticks[$networkSession->getDisplayName()]) || $this->ticks[$networkSession->getDisplayName()]["class"] !== $networkSession->getPlayer()) {
+                $this->ticks[$networkSession->getDisplayName()] = ["tick" => $packet->getTick(), "class" => $networkSession->getPlayer()];
+                return;
             }
+
+            $lastTick = $this->ticks[$networkSession->getDisplayName()]["tick"];
+            $currentTick = $packet->getTick();
+            $diff = $currentTick - $lastTick;
+
+            if($lastTick === $currentTick || $diff > 1 || $diff < 1) {
+                $this->flag();
+            } else $this->ticks[$networkSession->getDisplayName()]["tick"] = $currentTick;
         }
     }
 }
