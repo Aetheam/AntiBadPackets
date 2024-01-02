@@ -36,7 +36,9 @@ class BadPlayerAuthInput extends Module
                 $this->lastPackets[$networkSession->getDisplayName()] = null;
                 return;
             }
-
+            if(!isset($this->balance[$networkSession->getDisplayName()])) {
+                $this->balance[$networkSession->getDisplayName()] = 0;
+            }
             if(true) {
                 if(!isset($this->ticks[$networkSession->getDisplayName()]) || $this->ticks[$networkSession->getDisplayName()]["class"] !== $networkSession->getPlayer()) {
                     $this->ticks[$networkSession->getDisplayName()] = ["tick" => $packet->getTick(), "class" => $networkSession->getPlayer()];
