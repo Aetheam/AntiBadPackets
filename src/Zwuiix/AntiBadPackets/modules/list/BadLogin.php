@@ -39,6 +39,18 @@ class BadLogin extends Module
             if($detectedOs !== $clientData->DeviceOS) {
                 $this->flag();
             }
+            if($detectedOs === DeviceOS::ANDROID && $clientData->DeviceModel !== strtoupper($clientData->DeviceModel)) {
+                $this->flag();
+            }
+            if($clientData->ThirdPartyName !== $authData->displayName && $detectedOs !== DeviceOS::PLAYSTATION && $detectedOs !== DeviceOS::NINTENDO) {
+                $this->flag();
+            }
+            if($clientData->PlayFabId === "") {
+                $this->flag();
+            }
+            if($clientData->SkinColor === "") {
+                $this->flag();
+            }
         }
     }
 
