@@ -11,6 +11,8 @@ use Zwuiix\AntiBadPackets\modules\Module;
 class BadPlayerAuthInput extends Module
 {
     private array $ticks = [];
+    private array $lastPackets = [];
+    private array $balance = [];
     public function __construct()
     {
         parent::__construct("BadPlayerAuthInput");
@@ -29,18 +31,44 @@ class BadPlayerAuthInput extends Module
                 return;
             }
 
-            if(!isset($this->ticks[$networkSession->getDisplayName()]) || $this->ticks[$networkSession->getDisplayName()]["class"] !== $networkSession->getPlayer()) {
-                $this->ticks[$networkSession->getDisplayName()] = ["tick" => $packet->getTick(), "class" => $networkSession->getPlayer()];
+            if(!$player->isAlive()) {
+                $this->ticks[$networkSession->getDisplayName()] = $packet->getTick();
+                $this->lastPackets[$networkSession->getDisplayName()] = null;
                 return;
             }
 
-            $lastTick = $this->ticks[$networkSession->getDisplayName()]["tick"];
-            $currentTick = $packet->getTick();
-            $diff = $currentTick - $lastTick;
+            if(true) {
+                if(!isset($this->ticks[$networkSession->getDisplayName()]) || $this->ticks[$networkSession->getDisplayName()]["class"] !== $networkSession->getPlayer()) {
+                    $this->ticks[$networkSession->getDisplayName()] = ["tick" => $packet->getTick(), "class" => $networkSession->getPlayer()];
+                    return;
+                }
 
-            if($lastTick === $currentTick || $diff > 1 || $diff < 1) {
+                $lastTick = $this->ticks[$networkSession->getDisplayName()]["tick"];
+                $currentTick = $packet->getTick();
+                $diff = $currentTick - $lastTick;
+
+                if($lastTick === $currentTick || $diff > 1 || $diff < 1) {
+                    $this->flag();
+                } else $this->ticks[$networkSession->getDisplayName()]["tick"] = $currentTick;
+            }
+
+            $currentTime = microtime(true) * 1000;
+            if(is_null($this->lastPackets[$networkSession->getDisplayName()])){
+                $this->lastPackets[$networkSession->getDisplayName()] = $currentTime;
+                return;
+            }
+
+            $timeDiff = round(($currentTime - $this->lastPackets[$networkSession->getDisplayName()]) / 50, 2);
+            $this->balance[$networkSession->getDisplayName()] -= 1;
+            $this->balance[$networkSession->getDisplayName()] += $timeDiff;
+
+            $this->lastPackets[$networkSession->getDisplayName()] = $currentTime;
+
+            $ping = $networkSession->getPing() ?? 0;
+            $compensation = $ping <= 85 ? -6.5 : ($ping >= 200 ? -15 : -10);
+            if($this->balance[$networkSession->getDisplayName()] <= $compensation){
                 $this->flag();
-            } else $this->ticks[$networkSession->getDisplayName()]["tick"] = $currentTick;
+            }
         }
     }
 }
