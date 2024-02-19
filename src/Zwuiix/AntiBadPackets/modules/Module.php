@@ -10,6 +10,7 @@ abstract class Module
 {
     public function __construct(
         protected string $name,
+        protected bool $listener = false
     ) {}
 
     /**
@@ -20,9 +21,17 @@ abstract class Module
         return $this->name;
     }
 
-    public function flag(): void
+    /**
+     * @return bool
+     */
+    public function isListener(): bool
     {
-        throw new PacketHandlingException("Module {$this->getName()}");
+        return $this->listener;
+    }
+
+    public function flag(string $reason = "Unknown"): void
+    {
+        throw new PacketHandlingException("Module {$this->getName()}: {$reason}");
     }
 
     /**
