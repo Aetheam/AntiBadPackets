@@ -14,7 +14,6 @@ This plugin performs additional packet-level checks on **PocketMine-MP**.
 | Feature                   | Description                                                    |
 |:--------------------------|:---------------------------------------------------------------|
 | `ClientCacheBlob`      | `Checks if the number of HitHashes and MissHashes are correct` |
-| `CraftingEvent`        | `Check that the number of inputs and outputs and the items are correct!`                                                         |
 | `EmoteList`            | `Check that the number of emotes is correct!`                                                         |
 | `InventoryTransaction` | `Check if item information is correct!`                                                         |
 | `Login`                | `Checks whether the titleId and DeviceOs are compatible, as well as a check in the chains`                                                         |
