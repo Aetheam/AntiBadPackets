@@ -22,12 +22,8 @@ class BadClientCacheBlob extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if ($packet instanceof ClientCacheBlobStatusPacket) {
-            if(count($packet->getHitHashes()) >= 50) {
-                $this->flag();
-            }
-            if(count($packet->getMissHashes()) >= 50) {
-                $this->flag();
-            }
+            if(count($packet->getHitHashes()) >= 50) $this->flag();
+            if(count($packet->getMissHashes()) >= 50) $this->flag();
         }
     }
 }
