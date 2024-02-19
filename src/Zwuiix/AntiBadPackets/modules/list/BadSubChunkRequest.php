@@ -22,9 +22,7 @@ class BadSubChunkRequest extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if ($packet instanceof SubChunkRequestPacket) {
-            if(count($packet->getEntries()) >= 50) {
-                $this->flag();
-            }
+            if(count($packet->getEntries()) >= 50) $this->flag();
         }
     }
 }

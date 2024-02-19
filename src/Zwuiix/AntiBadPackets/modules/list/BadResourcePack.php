@@ -23,9 +23,7 @@ class BadResourcePack extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if ($packet instanceof ResourcePackClientResponsePacket) {
-            if(count($packet->packIds) > count(Server::getInstance()->getResourcePackManager()->getPackIdList())) {
-                $this->flag();
-            }
+            if(count($packet->packIds) > count(Server::getInstance()->getResourcePackManager()->getPackIdList())) $this->flag();
         }
     }
 }

@@ -27,8 +27,6 @@ class AntiBadPackets extends PluginBase
 {
     use SingletonTrait;
 
-    const MINIMUM_API_VERSION = "5.8.2";
-
     /**
      * @return void
      */
@@ -42,15 +40,8 @@ class AntiBadPackets extends PluginBase
      */
     protected function onEnable(): void
     {
-        if ($this->getServer()->getApiVersion() < $this::MINIMUM_API_VERSION) {
-            $this->getLogger()->warning(sprintf("Sorry, you are using a version prior to %s, please update your pocketmine version to make this plugin work.", $this::MINIMUM_API_VERSION));
-            $this->getServer()->getPluginManager()->disablePlugin($this);
-            return;
-        }
-
         ModuleManager::getInstance()->registers([
            new BadClientCacheBlob(),
-           new BadCraftingEvent(),
            new BadEmoteList(),
            new BadInventoryTransaction(),
            new BadLogin(),

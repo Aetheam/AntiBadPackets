@@ -5,6 +5,8 @@ namespace Zwuiix\AntiBadPackets\modules\list;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ServerboundPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
+use pocketmine\Server;
+use pocketmine\ServerProperties;
 use Zwuiix\AntiBadPackets\modules\Module;
 
 class BadText extends Module
@@ -25,13 +27,11 @@ class BadText extends Module
         if($packet instanceof TextPacket) {
             if(
                 count($packet->parameters) >= 5 ||
-                $packet->xboxUserId !== $networkSession->getPlayer()->getXuid() ||
+                ($packet->xboxUserId !== $networkSession->getPlayer()->getXuid() && Server::getInstance()->getConfigGroup()->getConfigBool(ServerProperties::XBOX_AUTH, true)) ||
                 $packet->needsTranslation ||
                 $packet->type !== TextPacket::TYPE_CHAT ||
                 $packet->sourceName !== $networkSession->getDisplayName()
-            ) {
-               $this->flag();
-            }
+            ) $this->flag();
         }
     }
 }

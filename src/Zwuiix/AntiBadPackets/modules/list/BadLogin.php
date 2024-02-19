@@ -12,6 +12,8 @@ use pocketmine\network\mcpe\protocol\types\login\AuthenticationData;
 use pocketmine\network\mcpe\protocol\types\login\ClientData;
 use pocketmine\network\mcpe\protocol\types\login\JwtChain;
 use pocketmine\network\PacketHandlingException;
+use pocketmine\Server;
+use pocketmine\ServerProperties;
 use Zwuiix\AntiBadPackets\modules\Module;
 
 class BadLogin extends Module
@@ -29,27 +31,24 @@ class BadLogin extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if($packet instanceof LoginPacket) {
-            $authData = $this->fetchAuthData($packet->chainDataJwt);
-            $clientData = $this->parseClientData($packet->clientDataJwt);
-            $detectedOs = match ($authData->titleId) {
-                "896928775" => DeviceOS::WINDOWS_10, "2047319603" => DeviceOS::NINTENDO, "1739947436" => DeviceOS::ANDROID,
-                "2044456598" => DeviceOS::PLAYSTATION, "1828326430" => DeviceOS::XBOX, "1810924247" => DeviceOS::IOS,
-                default => "Unknown",
-            };
-            if($detectedOs !== $clientData->DeviceOS) {
-                $this->flag();
-            }
-            if($detectedOs === DeviceOS::ANDROID && $clientData->DeviceModel !== strtoupper($clientData->DeviceModel)) {
-                $this->flag();
-            }
-            if($clientData->ThirdPartyName !== $authData->displayName && $detectedOs !== DeviceOS::PLAYSTATION && $detectedOs !== DeviceOS::NINTENDO) {
-                $this->flag();
-            }
-            if($clientData->PlayFabId === "") {
-                $this->flag();
-            }
-            if($clientData->SkinColor === "") {
-                $this->flag();
+            if (Server::getInstance()->getConfigGroup()->getConfigBool(ServerProperties::XBOX_AUTH, true)) {
+                $authData = $this->fetchAuthData($packet->chainDataJwt);
+                $clientData = $this->parseClientData($packet->clientDataJwt);
+                $detectedOs = match ($authData->titleId) {
+                    "896928775" => DeviceOS::WINDOWS_10,
+                    "2047319603" => DeviceOS::NINTENDO,
+                    "1739947436" => DeviceOS::ANDROID,
+                    "2044456598" => DeviceOS::PLAYSTATION,
+                    "1828326430" => DeviceOS::XBOX,
+                    "1810924247" => DeviceOS::IOS,
+                    default => "Unknown",
+                };
+
+                if ($detectedOs !== $clientData->DeviceOS) $this->flag();
+                if ($detectedOs === DeviceOS::ANDROID && $clientData->DeviceModel !== strtoupper($clientData->DeviceModel)) $this->flag();
+                if ($clientData->ThirdPartyName !== $authData->displayName && $detectedOs !== DeviceOS::PLAYSTATION && $detectedOs !== DeviceOS::NINTENDO) $this->flag();
+                if ($clientData->PlayFabId === "") $this->flag();
+                if ($clientData->SkinColor === "") $this->flag();
             }
         }
     }

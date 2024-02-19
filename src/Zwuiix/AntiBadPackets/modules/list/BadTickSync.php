@@ -24,7 +24,7 @@ class BadTickSync extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if($packet instanceof TickSyncPacket) {
-            if($this->addTickSync($networkSession) >= 10) {
+            if($this->addTickSync($networkSession) >= 4) {
                 $this->flag();
             }
         }

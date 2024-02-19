@@ -5,14 +5,15 @@ namespace Zwuiix\AntiBadPackets\modules\list;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\ServerboundPacket;
+use pocketmine\network\mcpe\protocol\types\DeviceOS;
 use pocketmine\player\Player;
 use Zwuiix\AntiBadPackets\modules\Module;
 
 class BadPlayerAuthInput extends Module
 {
-    private array $ticks = [];
-    private array $lastPackets = [];
-    private array $balance = [];
+    protected array $ticks = [];
+    protected array $death = [];
+
     public function __construct()
     {
         parent::__construct("BadPlayerAuthInput");
@@ -25,52 +26,42 @@ class BadPlayerAuthInput extends Module
      */
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
-        if($packet instanceof PlayerAuthInputPacket) {
-            $player = $networkSession->getPlayer();
-            if(!$player instanceof Player) {
-                return;
+        $player = $networkSession->getPlayer();
+        if (!$player instanceof Player) {
+            return;
+        }
+
+        if ($packet instanceof PlayerAuthInputPacket) {
+            $currentTick = $packet->getTick();
+            if (!$player->isAlive()) {
+                $this->ticks[$player->getId()] = $currentTick;
+                $this->death[$player->getId()] = true;
+            } else {
+                if (isset($this->ticks[$player->getId()])) {
+                    $lastTick = $this->ticks[$player->getId()];
+                    $diff = $currentTick - $lastTick;
+
+                    if (($this->death[$player->getId()] ?? null) === true) {
+                        $this->death[$player->getId()] = false;
+                        $this->ticks[$player->getId()] = $currentTick;
+                    } else {
+                        if (($lastTick === $currentTick) || $diff > 1 || $diff < 1) {
+                            $this->flag();
+                        } else $this->ticks[$player->getId()] = $currentTick;
+                    }
+                } else $this->ticks[$player->getId()] = $currentTick;
             }
 
-            if(!$player->isAlive()) {
-                $this->ticks[$networkSession->getDisplayName()] = $packet->getTick();
-                $this->lastPackets[$networkSession->getDisplayName()] = null;
-                return;
-            }
-            if(!isset($this->balance[$networkSession->getDisplayName()])) {
-                $this->balance[$networkSession->getDisplayName()] = 0;
-            }
-            if(true) {
-                if(!isset($this->ticks[$networkSession->getDisplayName()]) || $this->ticks[$networkSession->getDisplayName()]["class"] !== $networkSession->getPlayer()) {
-                    $this->ticks[$networkSession->getDisplayName()] = ["tick" => $packet->getTick(), "class" => $networkSession->getPlayer()];
-                    return;
-                }
+            $inputMode = $packet->getInputMode();
+            $deviceOs = $player->getPlayerInfo()->getExtraData()["DeviceOS"] ?? "";
+            $inputResult = match ($inputMode) { default => "unknown", 1 => "mouse", 2 => "touch", 3 => "game_pad", 4 => "motion_controller" };
 
-                $lastTick = $this->ticks[$networkSession->getDisplayName()]["tick"];
-                $currentTick = $packet->getTick();
-                $diff = $currentTick - $lastTick;
+            if(
+                $inputResult === "unknown" ||
+                ($inputResult === "mouse" && $deviceOs !== DeviceOS::XBOX && $deviceOs !== DeviceOS::PLAYSTATION && $deviceOs !== DeviceOS::WINDOWS_10) ||
+                ($inputResult === "touch" && ($deviceOs === DeviceOS::XBOX || $deviceOs === DeviceOS::PLAYSTATION))
 
-                if($lastTick === $currentTick || $diff > 1 || $diff < 1) {
-                    $this->flag();
-                } else $this->ticks[$networkSession->getDisplayName()]["tick"] = $currentTick;
-            }
-
-            $currentTime = microtime(true) * 1000;
-            if(is_null($this->lastPackets[$networkSession->getDisplayName()])){
-                $this->lastPackets[$networkSession->getDisplayName()] = $currentTime;
-                return;
-            }
-
-            $timeDiff = round(($currentTime - $this->lastPackets[$networkSession->getDisplayName()]) / 50, 2);
-            $this->balance[$networkSession->getDisplayName()] -= 1;
-            $this->balance[$networkSession->getDisplayName()] += $timeDiff;
-
-            $this->lastPackets[$networkSession->getDisplayName()] = $currentTime;
-
-            $ping = $networkSession->getPing() ?? 0;
-            $compensation = $ping <= 85 ? -6.5 : ($ping >= 200 ? -15 : -10);
-            if($this->balance[$networkSession->getDisplayName()] <= $compensation){
-                $this->flag();
-            }
+            ) $this->flag();
         }
     }
 }
