@@ -22,9 +22,7 @@ class BadEmoteList extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if ($packet instanceof EmoteListPacket) {
-            if(count($packet->getEmoteIds()) >= 50) {
-                $this->flag();
-            }
+            if(count($packet->getEmoteIds()) >= 50) $this->flag("Too big");
         }
     }
 }

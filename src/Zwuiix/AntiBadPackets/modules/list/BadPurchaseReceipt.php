@@ -22,7 +22,7 @@ class BadPurchaseReceipt extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if ($packet instanceof PurchaseReceiptPacket) {
-            if(count($packet->entries) >= 50) $this->flag();
+            if(count($packet->entries) >= 50) $this->flag("Too big");
         }
     }
 }

@@ -28,7 +28,7 @@ class BadInventoryTransaction extends Module
                 foreach ([$action->oldItem, $action->newItem] as $item) {
                     $item = TypeConverter::getInstance()->netItemStackToCore($item->getItemStack());
                     if (count($item->getEnchantments()) >= 100 || count($item->getCanDestroy()) >= 100 || count($item->getCanPlaceOn()) >= 100) {
-                        $this->flag();
+                        $this->flag("Too big");
                     }
                 }
             }

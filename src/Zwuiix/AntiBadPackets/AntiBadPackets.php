@@ -54,7 +54,6 @@ class AntiBadPackets extends PluginBase
            new BadSign(),
            new BadSubChunkRequest(),
            new BadText(),
-           new BadTickSync(),
         ]);
         EventLoader::loadEventWithClass($this, ServerListener::class);
         $this->getLogger()->debug("Successfully loaded!");

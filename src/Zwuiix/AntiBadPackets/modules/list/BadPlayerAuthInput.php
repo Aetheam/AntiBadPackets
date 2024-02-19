@@ -2,6 +2,8 @@
 
 namespace Zwuiix\AntiBadPackets\modules\list;
 
+use pocketmine\event\EventPriority;
+use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\ServerboundPacket;
@@ -9,6 +11,7 @@ use pocketmine\network\mcpe\protocol\types\DeviceOS;
 use pocketmine\network\mcpe\protocol\types\inventory\UseItemTransactionData;
 use pocketmine\network\mcpe\protocol\types\PlayerBlockActionStopBreak;
 use pocketmine\player\Player;
+use Zwuiix\AntiBadPackets\libs\SenseiTarzan\ExtraEvent\Class\EventAttribute;
 use Zwuiix\AntiBadPackets\modules\Module;
 
 class BadPlayerAuthInput extends Module
@@ -18,7 +21,7 @@ class BadPlayerAuthInput extends Module
 
     public function __construct()
     {
-        parent::__construct("BadPlayerAuthInput");
+        parent::__construct("BadPlayerAuthInput", true);
     }
 
     /**
@@ -47,7 +50,7 @@ class BadPlayerAuthInput extends Module
                         $this->ticks[$player->getId()] = $currentTick;
                     } else {
                         if (($lastTick === $currentTick) || $diff > 1 || $diff < 1) {
-                            $this->flag();
+                            $this->flag("Invalid tick");
                         } else $this->ticks[$player->getId()] = $currentTick;
                     }
                 } else $this->ticks[$player->getId()] = $currentTick;
@@ -56,8 +59,18 @@ class BadPlayerAuthInput extends Module
             $transactionData = $packet->getItemInteractionData()?->getTransactionData();
             if($player->isSurvival() && $transactionData instanceof UseItemTransactionData && $transactionData->getActionType() === UseItemTransactionData::ACTION_BREAK_BLOCK) {
                 $blockActions = $packet->getBlockActions();
-                if(is_null($blockActions)) $this->flag();
+                if(is_null($blockActions)) $this->flag("Invalid breaking");
             }
         }
+    }
+
+    /**
+     * @param PlayerDeathEvent $event
+     * @return void
+     */
+    #[EventAttribute(EventPriority::HIGH)]
+    public function onPlayerDeath(PlayerDeathEvent $event): void
+    {
+        $this->death[$event->getPlayer()->getId()] = true;
     }
 }

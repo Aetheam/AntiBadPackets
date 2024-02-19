@@ -5,13 +5,18 @@ namespace Zwuiix\AntiBadPackets\modules;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ServerboundPacket;
 use pocketmine\network\PacketHandlingException;
+use Zwuiix\AntiBadPackets\AntiBadPackets;
+use Zwuiix\AntiBadPackets\libs\SenseiTarzan\ExtraEvent\Component\EventLoader;
+use Zwuiix\AntiBadPackets\listener\ServerListener;
 
 abstract class Module
 {
     public function __construct(
         protected string $name,
         protected bool $listener = false
-    ) {}
+    ) {
+        if($this->isListener()) EventLoader::loadEventWithClass(AntiBadPackets::getInstance(), $this::class);
+    }
 
     /**
      * @return string

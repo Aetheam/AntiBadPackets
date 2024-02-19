@@ -22,7 +22,7 @@ class BadSetActorData extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if ($packet instanceof SetActorDataPacket) {
-            if (count($packet->metadata) >= 50) $this->flag();
+            if (count($packet->metadata) >= 50) $this->flag("Too big");
         }
     }
 }

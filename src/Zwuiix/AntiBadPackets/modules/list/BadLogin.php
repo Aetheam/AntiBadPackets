@@ -44,11 +44,13 @@ class BadLogin extends Module
                     default => "Unknown",
                 };
 
-                if ($detectedOs !== $clientData->DeviceOS) $this->flag();
-                if ($detectedOs === DeviceOS::ANDROID && $clientData->DeviceModel !== strtoupper($clientData->DeviceModel)) $this->flag();
-                if ($clientData->ThirdPartyName !== $authData->displayName && $detectedOs !== DeviceOS::PLAYSTATION && $detectedOs !== DeviceOS::NINTENDO) $this->flag();
-                if ($clientData->PlayFabId === "") $this->flag();
-                if ($clientData->SkinColor === "") $this->flag();
+                if ($detectedOs !== $clientData->DeviceOS) $this->flag("Invalid TitleId");
+                if ($detectedOs === DeviceOS::ANDROID && $clientData->DeviceModel !== strtoupper($clientData->DeviceModel)) $this->flag("Invalid DeviceModel");
+                if ($clientData->ThirdPartyName !== $authData->displayName && $detectedOs !== DeviceOS::PLAYSTATION && $detectedOs !== DeviceOS::NINTENDO) {
+                    $this->flag("Invalid ThirdPartyName");
+                }
+                if ($clientData->PlayFabId === "") $this->flag("Invalid PlayFabId");
+                if ($clientData->SkinColor === "") $this->flag("Invalid SkinColor");
             }
         }
     }
@@ -69,7 +71,7 @@ class BadLogin extends Module
             }
 
             if($k === 0 && (!isset($claims["exp"]) || isset($claims["iat"]) || isset($claims["iss"]))) {
-                $this->flag();
+                $this->flag("Invalid JWT");
             }
 
             if(isset($claims["extraData"])){

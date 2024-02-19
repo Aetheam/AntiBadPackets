@@ -22,7 +22,7 @@ class BadMapInfoRequest extends Module
     public function inboundPacket(NetworkSession $networkSession, ServerboundPacket $packet): void
     {
         if ($packet instanceof MapInfoRequestPacket) {
-            if(count($packet->clientPixels) >= 50) $this->flag();
+            if(count($packet->clientPixels) >= 50) $this->flag("Too big");
         }
     }
 }

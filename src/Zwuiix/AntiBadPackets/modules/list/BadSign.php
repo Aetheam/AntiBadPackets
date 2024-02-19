@@ -26,7 +26,7 @@ class BadSign extends Module
         if($packet instanceof BookEditPacket) {
             if ($packet->type == BookEditPacket::TYPE_SIGN_BOOK) {
                 if (($networkSession->getPlayer()->getXuid()) !== $packet->xuid && Server::getInstance()->getConfigGroup()->getConfigBool(ServerProperties::XBOX_AUTH, true)) {
-                    $this->flag();
+                    $this->flag("Invalid Xuid");
                 }
             }
         }
