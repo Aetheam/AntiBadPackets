@@ -6,6 +6,8 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\ServerboundPacket;
 use pocketmine\network\mcpe\protocol\types\DeviceOS;
+use pocketmine\network\mcpe\protocol\types\inventory\UseItemTransactionData;
+use pocketmine\network\mcpe\protocol\types\PlayerBlockActionStopBreak;
 use pocketmine\player\Player;
 use Zwuiix\AntiBadPackets\modules\Module;
 
@@ -62,6 +64,19 @@ class BadPlayerAuthInput extends Module
                 ($inputResult === "touch" && ($deviceOs === DeviceOS::XBOX || $deviceOs === DeviceOS::PLAYSTATION))
 
             ) $this->flag();
+
+            $transactionData = $packet->getItemInteractionData()?->getTransactionData();
+            if($player->isSurvival() && $transactionData instanceof UseItemTransactionData && $transactionData->getActionType() === UseItemTransactionData::ACTION_BREAK_BLOCK) {
+                $blockActions = $packet->getBlockActions();
+                if(is_null($blockActions)) $this->flag();
+
+                $find = false;
+                foreach ($blockActions as $blockAction) {
+                    if($blockAction instanceof PlayerBlockActionStopBreak) $find = true;
+                }
+
+                if(!$find) $this->flag();
+            }
         }
     }
 }
