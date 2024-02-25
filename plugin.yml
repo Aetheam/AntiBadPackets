@@ -1,5 +1,5 @@
 name: AntiBadPackets
-version: 1.0.3
+version: 1.0.4
 api: 5.11.0
 main: Zwuiix\AntiBadPackets\AntiBadPackets
 authors:
